@@ -1,0 +1,6 @@
+django
+django-heroku
+mongodb
+pandas
+bs4
+requests
