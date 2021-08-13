@@ -78,6 +78,23 @@ class IngatlanComCrawler:
                 return buttons['href']
         return None
 
+    # TODO unfinished - just an idea for performance optimalization...
+    def get_last_page_id(self, url):
+        result = requests.get(url, headers=self.http_headers)
+        soup = BeautifulSoup(result.content, 'lxml')
+        for page_num in soup.find_all('div', class_='pagination__page-number'):
+            match = re.findall(r'\/\s+([0-9]+)', str(page_num))
+            if match[0] :
+                print('van találat: ' + match[0])
+                return int(match[0])
+        return 1
+
+    def get_all_page_urls(self):
+        last_page_id = self.get_last_page_id(self.starter_url)
+        all_urls = [self.starter_url + '?page=' + str(n) for n in range(1, last_page_id+1)]
+        print(len(all_urls))
+        return all_urls
+
     def fetch_all_page_urls(self):
         next_page = self.__get_next_page_button_url(self.starter_url)
         while next_page:
@@ -85,14 +102,22 @@ class IngatlanComCrawler:
             next_page = self.__get_next_page_button_url(next_page)
         return self.all_urls
 
-    def crawl(self, headers=None):
-        print('crawler is running')
-        self.fetch_all_page_urls()
-        for url in self.all_urls:
-            print(url)
-            url_data = self.__get_house_price_data(url=url)
-            self.fetched_data.extend(url_data)
-        #print(self.fetched_data)
+    def crawl(self, headers=None, first_page=None, last_page=None):
+        print('crawler is running FÖRSZTPÉDZS: ' + str(first_page))
+        #self.all_urls = self.fetch_all_page_urls()
+        self.all_urls = self.get_all_page_urls()
+        if not first_page: # fetch everything
+            for url in self.all_urls:
+                url_data = self.__get_house_price_data(url=url)
+                self.fetched_data.extend(url_data)
+        else:
+            if not last_page:
+                last_page = len(self.all_urls)
+            last_page = min(last_page, len(self.all_urls))
+            print('JETI get_house_price_predict_data from page {} to {}'.format(first_page, last_page))
+            for i in range(first_page, last_page):  # fetch in range
+                print('get house predict  URL: ' + self.all_urls[i])
+                url_data = self.__get_house_price_data(url=self.all_urls[i])
+                self.fetched_data.extend(url_data)    
         return self.fetched_data
-
 
