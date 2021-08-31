@@ -1,7 +1,7 @@
 # YouTube Link:
 
 # Let's obtain the links from the following website:
-# https://ingatlan.com/szukites/elado+lakas
+# http://ingatlan.com/szukites/elado+lakas
 
 # One of the things this website consists of is records of presidential
 # briefings and statements.
@@ -13,14 +13,15 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime
+#from bson.objectid import ObjectId
 
 class IngatlanComCrawler:
-    starter_url = 'https://ingatlan.com/szukites/elado+lakas'
+    starter_url = 'http://ingatlan.com:80/szukites/elado+lakas'
     all_urls = list()
     fetched_data = list()
     http_headers = dict()
 
-    def __init__(self, http_headers=None, starter_url = 'https://ingatlan.com/szukites/elado+lakas'):
+    def __init__(self, http_headers=None, starter_url = 'http://ingatlan.com:80/szukites/elado+lakas'):
         if http_headers != None:
             self.http_headers = http_headers
         self.starter_url = starter_url
@@ -50,6 +51,7 @@ class IngatlanComCrawler:
 
         for list_link in soup.find_all('div', class_='listing__card'):
             house_data = dict()
+            #house_data['_id'] = ObjectId.from_datetime(datetime.now())
             house_data['data_source'] = url
             house_data['fetch_date'] = datetime.now()
 
@@ -103,10 +105,9 @@ class IngatlanComCrawler:
         return self.all_urls
 
     def crawl(self, headers=None, first_page=None, last_page=None):
-        print('crawler is running FÖRSZTPÉDZS: ' + str(first_page))
         #self.all_urls = self.fetch_all_page_urls()
         self.all_urls = self.get_all_page_urls()
-        if not first_page: # fetch everything
+        if first_page is None: # fetch everything
             for url in self.all_urls:
                 url_data = self.__get_house_price_data(url=url)
                 self.fetched_data.extend(url_data)
@@ -114,7 +115,6 @@ class IngatlanComCrawler:
             if not last_page:
                 last_page = len(self.all_urls)
             last_page = min(last_page, len(self.all_urls))
-            print('JETI get_house_price_predict_data from page {} to {}'.format(first_page, last_page))
             for i in range(first_page, last_page):  # fetch in range
                 print('get house predict  URL: ' + self.all_urls[i])
                 url_data = self.__get_house_price_data(url=self.all_urls[i])

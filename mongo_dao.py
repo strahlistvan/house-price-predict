@@ -24,7 +24,7 @@ class MongoDAO:
         self.collection = self.db[self.collname]
 
     def insert_documents(self, document_list):
-        new_result = self.collection.insert_many(document_list)
+        new_result = self.collection.insert_many(document_list, ordered=False)
         #print('Multiple posts: {0}'.format(new_result.inserted_ids))
 
     def get_all_documents(self, collection_name):
